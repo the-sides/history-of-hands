@@ -6,16 +6,17 @@ const createSlugName = (name: string) => name.toLowerCase().replaceAll(" ", "-")
 export async function getList(slugName: string) {
     const list = await kv.get(["lists", slugName]);
     if(list.value === null) {
-        createList(slugName)
+        return null;
     }
     return list;
 }
 
+// Don't over do it for now
 
-export async function createList(name: string) {
-    console.log("Creating list", name);
+export async function createTournament(name: string, participants: string[]) {
+    console.log("Creating tournament:", name, "for", participants);
     const slugName = createSlugName(name);
-    const key = ["lists", slugName];
-    const value = { user: slugName, name, items: [] };
+    const key = ["tournaments", slugName];
+    const value = { users: slugName, name, items: [] };
     await kv.set(key, value);
 }
