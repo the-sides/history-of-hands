@@ -19,7 +19,7 @@ export default function App({ Component, state }: PageProps) {
           </nav>
         </header>
         <Component />
-        <NameModal existingName={state.name as string} />
+        {/* <NameModal existingName={state.name as string} /> */}
       </body>
     </html>
   );

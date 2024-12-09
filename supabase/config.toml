@@ -1,0 +1,14 @@
+[auth]
+enabled = true
+# ...
+
+# HERE -> Update to match Fresh's localhost URL
+site_url = "http://127.0.0.1:8000"
+
+# ...
+
+[auth.email]
+# ...
+
+# Here -> Set this to `true` to use the PKCE flow locally
+enable_confirmations = true
