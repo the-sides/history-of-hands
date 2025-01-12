@@ -4,29 +4,29 @@ import { useState } from "react";
 
 import { api } from "~/trpc/react";
 
-export function LatestPost() {
-  const [latestPost] = api.post.getLatest.useSuspenseQuery();
+export function LatestGame() {
+  const [latestGame] = api.game.getLatest.useSuspenseQuery();
 
   const utils = api.useUtils();
   const [name, setName] = useState("");
-  const createPost = api.post.create.useMutation({
+  const createGame = api.game.create.useMutation({
     onSuccess: async () => {
-      await utils.post.invalidate();
+      await utils.game.invalidate();
       setName("");
     },
   });
 
   return (
     <div className="w-full max-w-xs">
-      {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
+      {latestGame ? (
+        <p className="truncate">Your most recent game: {latestGame.name}</p>
       ) : (
-        <p>You have no posts yet.</p>
+        <p>You have no games yet.</p>
       )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          createPost.mutate({ name });
+          createGame.mutate({ name });
         }}
         className="flex flex-col gap-2"
       >
@@ -40,9 +40,9 @@ export function LatestPost() {
         <button
           type="submit"
           className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
-          disabled={createPost.isPending}
+          disabled={createGame.isPending}
         >
-          {createPost.isPending ? "Submitting..." : "Submit"}
+          {createGame.isPending ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
