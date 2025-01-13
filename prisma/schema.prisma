@@ -21,12 +21,20 @@ model Game {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation("UserCreatedGames", fields: [createdById], references: [id])
+    createdBy   User    @relation("UserCreatedGames", fields: [createdById], references: [id])
     createdById String
-    against     User   @relation("UserAgainstGames", fields: [againstId], references: [id])
-    againstId   String
+    against     User?   @relation("UserAgainstGames", fields: [againstId], references: [id])
+    againstId   String?
+    invite      Invite? @relation("gameInvite")
 
     @@index([name])
+}
+
+model Invite {
+    id     String @id @default(cuid())
+    game   Game?  @relation("gameInvite", fields: [gameId], references: [id])
+    gameId Int @unique
+    email  String
 }
 
 // Necessary for Next auth
