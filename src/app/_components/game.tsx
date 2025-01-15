@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { api } from "~/trpc/react";
@@ -19,7 +20,7 @@ export function LatestGame() {
   return (
     <div className="w-full max-w-xs">
       {latestGame ? (
-        <p className="truncate">Your most recent game: {latestGame.name}</p>
+        <p className="truncate">Your most recent game: {latestGame.name} - <Link href={'/game/'+latestGame.id}>View</Link></p>
       ) : (
         <p>You have no games yet.</p>
       )}

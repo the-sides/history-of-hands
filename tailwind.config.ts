@@ -6,8 +6,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        sans: [`"Jersey 10"`, ...fontFamily.sans],
       },
+      fontSize: {
+        'display1': '7rem'
+      }
     },
   },
   plugins: [],
