@@ -36,6 +36,14 @@ export const gameRouter = createTRPCRouter({
       if (game.createdById !== ctx.session.user.id)
         throw new Error("User does not own game to send invites");
 
+      const existingInvite = ctx.db.invite.findFirst({
+        where: {
+          gameId: input.gameId
+        }
+      })
+      
+      if(existingInvite) return existingInvite;
+      
       return ctx.db.invite.create({
         data: {
           gameId: input.gameId,
