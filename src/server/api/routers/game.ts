@@ -26,6 +26,31 @@ export const gameRouter = createTRPCRouter({
       });
     }),
 
+  acceptInvite: protectedProcedure
+    .input(z.object({ inviteId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const invite = await ctx.db.invite.findFirstOrThrow({
+        where: { id: input.inviteId },
+      });
+
+      const res = await ctx.db.$transaction([
+        ctx.db.invite.delete({
+          where: {
+            id: invite.id,
+          },
+        }),
+        ctx.db.game.update({
+          where: {
+            id: invite.gameId,
+          },
+          data: {
+            against: { connect: { id: ctx.session.user.id } },
+          },
+        }),
+      ]);
+      return res[1];
+    }),
+
   createInvite: protectedProcedure
     .input(z.object({ gameId: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -36,14 +61,17 @@ export const gameRouter = createTRPCRouter({
       if (game.createdById !== ctx.session.user.id)
         throw new Error("User does not own game to send invites");
 
-      const existingInvite = ctx.db.invite.findFirst({
+      const existingInvite = await ctx.db.invite.findFirst({
         where: {
-          gameId: input.gameId
-        }
-      })
-      
-      if(existingInvite) return existingInvite;
-      
+          gameId: input.gameId,
+        },
+      });
+
+      if (existingInvite) {
+        console.log("FOUND?", existingInvite);
+        return existingInvite;
+      }
+
       return ctx.db.invite.create({
         data: {
           gameId: input.gameId,
@@ -54,7 +82,7 @@ export const gameRouter = createTRPCRouter({
   getGames: protectedProcedure.query(async ({ ctx }) => {
     const games = await ctx.db.game.findMany({
       orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
+      where: { OR: [{createdBy: { id: ctx.session.user.id }}, {against: { id: ctx.session.user.id }}, ]},
     });
 
     return games ?? null;
@@ -64,20 +92,34 @@ export const gameRouter = createTRPCRouter({
     .input(z.object({ gameId: z.number() }))
     .query(async ({ ctx, input }) => {
       const game = await ctx.db.game.findFirst({
-        where: { createdBy: { id: ctx.session.user.id }, id: input.gameId },
+        where: { id: input.gameId, OR: [{createdBy: { id: ctx.session.user.id }}, {against: { id: ctx.session.user.id }}, ]},
       });
 
-      return game ?? null;
+      const createdByUser = await ctx.db.user.findFirstOrThrow({
+        where: {
+          id: game?.createdById,
+        },
+      });
+
+      const againstUser = await ctx.db.user.findFirst({
+        where: {
+          id: game?.againstId ?? "",
+        },
+      });
+
+      return game && createdByUser
+        ? { ...game, createdByUser, againstUser }
+        : null;
     }),
 
   deleteOne: protectedProcedure
     .input(z.object({ gameId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const game = await ctx.db.game.delete({
+      const res = await ctx.db.game.delete({
         where: { createdBy: { id: ctx.session.user.id }, id: input.gameId },
       });
 
-      return game ?? null;
+      return res ?? null;
     }),
 
   getSecretMessage: protectedProcedure.query(() => {

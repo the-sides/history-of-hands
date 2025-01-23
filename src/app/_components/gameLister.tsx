@@ -46,7 +46,7 @@ export function GameLister() {
           e.preventDefault();
           createGame.mutate({ name });
         }}
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-2 mt-24"
       >
         {/* <input
           type="text"

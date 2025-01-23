@@ -19,20 +19,25 @@ export default async function GamePage({
 
     return <HydrateClient>
         <main className="flex min-h-[50vh] flex-col items-center ">
-            <h1 className="text-display1">
-                {game && game.name}
-            </h1>
-            <div className="container pb-32">
-                <h2 className="text-display1">Players</h2>
-                <div className="w-full px-20 space-y-8 text-8xl">
-                    <p className=" text-blue-400">
-                        {session?.user.name}
-                    </p>
-                    {game &&
-                        <CreateInvite gameId={game.id} />
-                    }
-                </div>
-            </div>
+            {game && 
+                <div className="container pb-32">
+                <h1 className="text-display1">
+                    Game: {game.name}
+                </h1>
+                    <h2 className="text-display1">Players:</h2>
+                    <div className="w-full px-20 space-y-8 text-8xl">
+                        <p className=" text-blue-400">
+                            {game.createdByUser?.name}
+                        </p>
+                        {
+                            game.againstUser ?
+                                <p className=" text-blue-400">
+                                    {game?.againstUser?.name}
+                                </p> :
+                                <CreateInvite gameId={game.id} />
+                        }
+                    </div>
+                </div>}
         </main>
     </HydrateClient>
 }
