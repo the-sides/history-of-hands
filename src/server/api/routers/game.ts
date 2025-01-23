@@ -63,6 +63,16 @@ export const gameRouter = createTRPCRouter({
       return game ?? null;
     }),
 
+    deleteOne: protectedProcedure
+    .input(z.object({ gameId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const game = await ctx.db.game.delete({
+        where: { createdBy: { id: ctx.session.user.id }, id: input.gameId },
+      });
+
+      return game ?? null;
+    }),
+
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
   }),
