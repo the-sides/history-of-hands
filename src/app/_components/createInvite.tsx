@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { useState } from "react";
 import { api } from "~/trpc/react"
 
@@ -11,10 +12,10 @@ export default function CreateInvite({ gameId }: { gameId: number }) {
     const createInvite = api.game.createInvite.useMutation({
         onSuccess(data) {
             console.log(data)
-            if (data?.id) setLink('localhost:3000/accept-invite/' + data.id)
+            if (data?.id) setLink('history-of-hands.vercel.app/accept-invite/' + data.id)
         }
     })
-    if (link) return <p className="break-all">{link}</p>
+    if (link) return <Link prefetch={false} href={'https://'+link} className="break-all underline">{link}</Link>
     return <button onClick={() => {
         setLoading(true)
         createInvite.mutate({ gameId })
