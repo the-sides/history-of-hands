@@ -34,7 +34,6 @@ model Invite {
     id     String @id @default(cuid())
     game   Game?  @relation("gameInvite", fields: [gameId], references: [id])
     gameId Int @unique
-    email  String
 }
 
 // Necessary for Next auth

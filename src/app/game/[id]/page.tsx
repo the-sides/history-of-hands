@@ -1,3 +1,4 @@
+import CreateInvite from "~/app/_components/createInvite";
 import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 
@@ -27,7 +28,9 @@ export default async function GamePage({
                     <p className=" text-blue-400">
                         {session?.user.name}
                     </p>
-                    <button className="underline">Copy Invite Link</button>
+                    {game &&
+                        <CreateInvite gameId={game.id} />
+                    }
                 </div>
             </div>
         </main>

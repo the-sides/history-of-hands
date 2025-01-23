@@ -26,22 +26,21 @@ export const gameRouter = createTRPCRouter({
       });
     }),
 
-  sendInvite: protectedProcedure
-    .input(z.object({ email: z.string().default('N/A'), gameId: z.number() }))
+  createInvite: protectedProcedure
+    .input(z.object({ gameId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       // Confirm user owns game
       const game = await ctx.db.game.findFirstOrThrow({
-        where: { id: input.gameId }
-      })
+        where: { id: input.gameId },
+      });
       if (game.createdById !== ctx.session.user.id)
-        throw new Error('User does not own game to send invites')
+        throw new Error("User does not own game to send invites");
 
       return ctx.db.invite.create({
         data: {
-          email: input.email,
-          gameId: input.gameId
-        }
-      })
+          gameId: input.gameId,
+        },
+      });
     }),
 
   getGames: protectedProcedure.query(async ({ ctx }) => {
@@ -63,7 +62,7 @@ export const gameRouter = createTRPCRouter({
       return game ?? null;
     }),
 
-    deleteOne: protectedProcedure
+  deleteOne: protectedProcedure
     .input(z.object({ gameId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const game = await ctx.db.game.delete({
