@@ -6,7 +6,7 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 
 export function LatestGame() {
-  const [latestGame] = api.game.getLatest.useSuspenseQuery();
+  const [games] = api.game.getGames.useSuspenseQuery();
 
   const utils = api.useUtils();
   const [name, setName] = useState("");
@@ -18,9 +18,11 @@ export function LatestGame() {
   });
 
   return (
-    <div className="w-full max-w-xs">
-      {latestGame ? (
-        <p className="truncate">Your most recent game: {latestGame.name} - <Link href={'/game/'+latestGame.id}>View</Link></p>
+    <div className="w-full text-[2rem] md:text-[4rem] max-w-fit">
+      {games?.length > 0 ? (
+        games.map(game => 
+          <p className="">{game.name} - <Link href={'/game/'+game.id}>View</Link></p>
+        )
       ) : (
         <p>You have no games yet.</p>
       )}

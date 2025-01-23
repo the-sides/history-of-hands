@@ -44,13 +44,13 @@ export const gameRouter = createTRPCRouter({
       })
     }),
 
-  getLatest: protectedProcedure.query(async ({ ctx }) => {
-    const game = await ctx.db.game.findFirst({
+  getGames: protectedProcedure.query(async ({ ctx }) => {
+    const games = await ctx.db.game.findMany({
       orderBy: { createdAt: "desc" },
       where: { createdBy: { id: ctx.session.user.id } },
     });
 
-    return game ?? null;
+    return games ?? null;
   }),
 
   getOne: protectedProcedure
