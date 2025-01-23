@@ -4,7 +4,6 @@ import { api, HydrateClient } from "~/trpc/server";
 import AuthButton from "./_components/signInBtn";
 
 export default async function Home() {
-  const hello = await api.game.hello({ text: "from tRPC" });
   const session = await auth();
 
   if (session?.user) {
