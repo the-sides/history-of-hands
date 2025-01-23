@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import GoBack from "./goBack";
+import AuthButton from "./signInBtn";
 
 export default async function Nav() {
     const session = await auth();
@@ -12,7 +13,7 @@ export default async function Nav() {
         >
             {
                 session?.user && 
-                <a className="block p-12" href="/api/auth/signout">Sign Out</a>
+                <AuthButton className="block p-12" asSignIn={false}>Sign Out</AuthButton>
                 
             }
         </div>
