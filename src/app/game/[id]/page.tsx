@@ -1,4 +1,5 @@
 import CreateInvite from "~/app/_components/createInvite";
+import GameStage from "~/app/_components/gameStage";
 import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 
@@ -47,12 +48,13 @@ function renderGameSwitch(game: any) {
         );
     }
 
-    return (
-        <div className="flex w-full justify-around text-8xl container">
-            <p className="text-blue-400">{game.createdByUser?.name}</p>
-            vs.
-            <p className="text-red-400">{game.againstUser?.name}</p>
+    return (<main className="min-h-[calc(100vh-144px)] flex flex-col">
+            <div className="flex w-full justify-around text-8xl container">
+                <p className="text-blue-400">{game.createdByUser?.name}</p>
+                vs.
+                <p className="text-red-400">{game.againstUser?.name}</p>
+            </div>
             <GameStage game={game}></GameStage>
-        </div>
+        </main>
     );
 }
