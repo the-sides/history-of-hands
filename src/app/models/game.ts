@@ -1,4 +1,4 @@
-import { Game, User } from "@prisma/client"
+import type { Game, User } from "@prisma/client"
 
 export interface LoadedGame extends Game {
     createdByUser: User

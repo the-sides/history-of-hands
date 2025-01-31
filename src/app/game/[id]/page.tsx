@@ -1,7 +1,6 @@
-import { Game } from "@prisma/client";
 import CreateInvite from "~/app/_components/createInvite";
 import GameStage from "~/app/_components/gameStage";
-import { LoadedGame } from "~/app/models/game";
+import type { LoadedGame } from "~/app/models/game";
 import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 

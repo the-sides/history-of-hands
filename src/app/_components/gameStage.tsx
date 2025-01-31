@@ -1,5 +1,5 @@
 
-import { LoadedGame } from "../models/game";
+import type { LoadedGame } from "../models/game";
 import CardSlider from "./cardSlider";
 
 export default function GameStage({ game }: { game: LoadedGame }) {
