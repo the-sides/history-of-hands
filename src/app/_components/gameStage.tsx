@@ -1,11 +1,7 @@
-import { Game, User } from "@prisma/client";
+
+import { LoadedGame } from "../models/game";
 import CardSlider from "./cardSlider";
 
-interface LoadedGame extends Game {
-    createdByUser: User
-    againstUser: User
-}
-// This will not include the user objects I'm adding
 export default function GameStage({ game }: { game: LoadedGame }) {
     return (
         <div className="flex flex-1 flex-col justify-center items-center text-3xl md:text-5xl w-[calc(100vw-20px)]">

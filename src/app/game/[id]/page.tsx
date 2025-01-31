@@ -1,5 +1,7 @@
+import { Game } from "@prisma/client";
 import CreateInvite from "~/app/_components/createInvite";
 import GameStage from "~/app/_components/gameStage";
+import { LoadedGame } from "~/app/models/game";
 import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 
@@ -21,13 +23,13 @@ export default async function GamePage({
     return (
         <HydrateClient>
             <main className="flex min-h-[50vh] flex-col items-center">
-                {renderGameSwitch(game)}
+                {renderGameSwitch(game as LoadedGame)}
             </main>
         </HydrateClient>
     );
 }
 
-function renderGameSwitch(game: any) {
+function renderGameSwitch(game: LoadedGame) {
     if (!game) {
         return (
             <p className="flex-1 block mt-32 text-[5rem] break-words text-center mx-auto">
