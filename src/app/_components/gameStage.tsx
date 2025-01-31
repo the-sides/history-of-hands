@@ -12,7 +12,7 @@ export default function GameStage({ game }: { game: LoadedGame }) {
             <h5 className="text-2xl">{rn.format('h:mm a')}</h5>
             
 
-            <div className="flex justify-between w-full overflow-hidden">
+            <div className="md:-mt-24 flex justify-between w-full overflow-hidden">
                 <CardSlider user={game.createdByUser} isOwner />
                 <CardSlider user={game.againstUser} isOwner={false} />
             </div>
