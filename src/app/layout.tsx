@@ -17,7 +17,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body className="min-h-screen flex flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+      <body className="min-h-screen flex flex-col bg-gradient-to-br from-[#532A73] to-[#081B59] text-white">
         <TRPCReactProvider>
           <Nav />
           {children}</TRPCReactProvider>

@@ -49,10 +49,10 @@ function renderGameSwitch(game: any) {
     }
 
     return (<main className="min-h-[calc(100vh-144px)] flex flex-col">
-            <div className="flex w-full justify-around text-8xl container">
-                <p className="text-blue-400">{game.createdByUser?.name}</p>
+            <div className="flex gap-x-5 w-full justify-center text-4xl md:text-7xl container mx-auto">
+                <p className="flex-1 text-right text-blue-400">{game.createdByUser?.name}</p>
                 vs.
-                <p className="text-red-400">{game.againstUser?.name}</p>
+                <p className="flex-1 text-left text-red-400">{game.againstUser?.name}</p>
             </div>
             <GameStage game={game}></GameStage>
         </main>
