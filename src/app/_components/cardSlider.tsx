@@ -41,8 +41,8 @@ export default function CardSlider({selected, handleSelect, user, isOwner }: Car
         </div>
         {/* : */}
         <div className={`flex flex-col items-center justify-center w-full transition-opacity ${selected === null && 'opacity-0'}`}>
-            <p className="text-3xl md:text-9xl">{selected}</p>
-            <button className="border px-2" onClick={() => handleSelect(null)}>cancel</button>
+            <p className="text-5xl md:text-9xl">{selected}</p>
+            <button className="border px-2 mt-4 text-xl md:text-4xl" onClick={() => handleSelect(null)}>cancel</button>
         </div>
         {/* } */}
     </div>
