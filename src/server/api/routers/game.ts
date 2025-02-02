@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import type { typeOfHand } from "~/app/models/game";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const gameRouter = createTRPCRouter({
@@ -137,7 +136,7 @@ export const gameRouter = createTRPCRouter({
           creatorThrew: input.creatorThrew,
           // Undefined when game is made initially, but when you're able
           // to save rounds, that's only possible when an againstId is defined
-          against: { connect: { id: game.againstId as string } },
+          against: game.againstId ? { connect: { id: game.againstId } } : undefined,
           createdBy: { connect: { id: game.createdById } },
           game: { connect: { id: game.id } },
           winner: winner ? { connect: { id: winner } } : undefined,

@@ -1,5 +1,5 @@
-import { Round, User } from "@prisma/client";
-import { LoadedGame, typeOfHand } from "../models/game";
+import type { Round, User } from "@prisma/client";
+import type { LoadedGame, typeOfHand } from "../models/game";
 
 function PlayerStats({ user, color, rounds }: { user: User; color: string; rounds: Round[] }) {
   const wonRounds = rounds.filter((round) => round.winnerId === user.id);

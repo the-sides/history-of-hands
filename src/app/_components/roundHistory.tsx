@@ -1,8 +1,6 @@
-import { Round } from "@prisma/client";
-import { TRPCClientErrorLike } from "@trpc/client";
-import { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import type { Round } from "@prisma/client";
 import dayjs from "dayjs";
-import { LoadedGame } from "../models/game";
+import type { LoadedGame } from "../models/game";
 
 const emojis = {
   ROCK: "🪨",
@@ -10,7 +8,7 @@ const emojis = {
   SCISSORS: "✂️",
 };
 
-export default function RoundHistory({ rounds, game }: { rounds: UseTRPCQueryResult<Round[], TRPCClientErrorLike<any>>, game: LoadedGame }) {
+export default function RoundHistory({ rounds, game }: { rounds: Round[], game: LoadedGame }) {
   return (
     <div
       className="md:flex w-full items-center gap-12 overflow-auto px-6 md:px-12 py-6 transition-opacity"
@@ -19,14 +17,14 @@ export default function RoundHistory({ rounds, game }: { rounds: UseTRPCQueryRes
         maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
       }}
     >
-      {rounds.data?.map((round) => {
+      {rounds?.map((round) => {
         let winner = "Tie";
         let winnerColor = "text-neutral-400";
         if (round.winnerId === game.createdByUser?.id) {
-          winner = game.createdByUser.name as string;
+          winner = game.createdByUser.name ?? "";
           winnerColor = "text-blue-400";
-        } else if (round.winnerId === game.againstUser?.id) {
-          winner = game.againstUser?.name as string;
+        } else if (round.winnerId === game.againstUser.id) {
+          winner = game.againstUser?.name ?? "";
           winnerColor = "text-red-400";
         }
         // const winnerElm = winner !== 'tie' ? <p className={`text-5xl md:text-9xl ${winnerColor}`}>{winner} Won </p>

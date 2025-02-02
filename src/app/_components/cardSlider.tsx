@@ -1,8 +1,8 @@
 'use client';
 
 import type { User } from "@prisma/client";
-import { useEffect, useRef, useState } from "react"
-import { typeOfHand } from "../models/game";
+import { useEffect, useRef, useState } from "react";
+import type { typeOfHand } from "../models/game";
 
 
 interface CardSliderProps {

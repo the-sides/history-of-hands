@@ -22,10 +22,10 @@ export default function GameStage({ game }: { game: LoadedGame }) {
   const [againstSelected, setAgainstSelected] = useState<typeOfHand | null>(null);
   const bothSelected = creatorSelected && againstSelected;
   const saveHand = api.game.saveRound.useMutation({
-    onSuccess() {
+    async onSuccess() {
       setCreatorSelected(null);
       setAgainstSelected(null);
-      rounds.refetch();
+      await rounds.refetch();
       toast.success("Round saved!");
     },
     onError() {
@@ -65,7 +65,7 @@ export default function GameStage({ game }: { game: LoadedGame }) {
       )}
 
       <h4 className="mt-24 w-full text-center">History</h4>
-      <RoundHistory rounds={rounds} game={game}></RoundHistory>
+      <RoundHistory rounds={rounds.data ?? []} game={game}></RoundHistory>
 
       <h4 className="mt-24 w-full text-center">Stats</h4>
       <Stats game={game} rounds={rounds.data ?? []}></Stats>
