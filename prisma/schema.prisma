@@ -37,23 +37,29 @@ enum ThrowType {
     PAPER
     SCISSORS
 }
+
 model Round {
-    id          String      @id @default(cuid())
+    id           String    @id @default(cuid())
     creatorThrew ThrowType
     againstThrew ThrowType
-    game         Game   @relation(fields: [gameId], references: [id])
+    game         Game      @relation(fields: [gameId], references: [id])
     gameId       Int
-    createdAt    DateTime @default(now())
-    createdBy    User     @relation("UserCreatorRounds", fields: [createdById], references: [id])
-    createdById  String
-    against      User     @relation("UserAgainstRounds", fields: [againstId], references: [id])
-    againstId    String
+    winner       User?     @relation("RoundsWon", fields: [winnerId], references: [id])
+    winnerId     String?
+
+    createdAt   DateTime @default(now())
+    createdBy   User     @relation("UserCreatorRounds", fields: [createdById], references: [id])
+    createdById String
+    against     User     @relation("UserAgainstRounds", fields: [againstId], references: [id])
+    againstId   String
+    User        User?    @relation(fields: [userId], references: [id])
+    userId      String?
 }
 
 model Invite {
     id     String @id @default(cuid())
     game   Game?  @relation("gameInvite", fields: [gameId], references: [id])
-    gameId Int @unique
+    gameId Int    @unique
 }
 
 // Necessary for Next auth
@@ -94,9 +100,11 @@ model User {
     sessions      Session[]
     createdGames  Game[]    @relation("UserCreatedGames")
     againstGames  Game[]    @relation("UserAgainstGames")
-    roundsCreated Round[] @relation("UserCreatorRounds")
-    roundsAgainst  Round[] @relation("UserAgainstRounds")
+    roundsCreated Round[]   @relation("UserCreatorRounds")
+    roundsAgainst Round[]   @relation("UserAgainstRounds")
 
+    Round     Round[]
+    wonRounds Round[] @relation("RoundsWon")
 }
 
 model VerificationToken {

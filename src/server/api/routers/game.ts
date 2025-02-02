@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import type { typeOfHand } from "~/app/models/game";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const gameRouter = createTRPCRouter({
@@ -118,6 +119,18 @@ export const gameRouter = createTRPCRouter({
         throw new Error("User is not in this game");
       }
 
+      let winner = null;
+      const beats = {
+        'ROCK': 'SCISSORS',
+        'PAPER': 'ROCK',
+        'SCISSORS': 'PAPER'
+      };
+      if(beats[input.creatorThrew] === input.againstThrew) {
+        winner = game.createdById;
+      } else if(beats[input.againstThrew] === input.creatorThrew) {
+        winner = game.againstId;
+      }
+
       return ctx.db.round.create({
         data: {
           againstThrew: input.againstThrew,
@@ -127,12 +140,13 @@ export const gameRouter = createTRPCRouter({
           against: { connect: { id: game.againstId as string } },
           createdBy: { connect: { id: game.createdById } },
           game: { connect: { id: game.id } },
+          winner: winner ? { connect: { id: winner } } : undefined,
         },
       });
     }),
 
   getRounds: protectedProcedure.input(z.object({ gameId: z.number() })).query(async ({ ctx, input }) => {
     // To verify or not to verify? Who cares???
-    return ctx.db.round.findMany({ where: { gameId: input.gameId } });
+    return ctx.db.round.findMany({ where: { gameId: input.gameId }, orderBy: { createdAt: "desc" } });
   }),
 });
