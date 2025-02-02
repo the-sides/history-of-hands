@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
 import dayjs from "dayjs";
 import type { LoadedGame, typeOfHand } from "../models/game";
 import CardSlider from "./cardSlider";
 import { useState } from "react";
 import { api } from "~/trpc/react";
-import { toast } from 'sonner'
-
+import { toast } from "sonner";
 
 const rn = dayjs();
 export default function GameStage({ game }: { game: LoadedGame }) {
@@ -14,17 +13,18 @@ export default function GameStage({ game }: { game: LoadedGame }) {
   const [againstSelected, setAgainstSelected] = useState<typeOfHand | null>(null);
   const bothSelected = creatorSelected && againstSelected;
   const saveHand = api.game.saveRound.useMutation({
-    onSuccess(){
-      setCreatorSelected(null)
-      setAgainstSelected(null)
+    onSuccess() {
+      setCreatorSelected(null);
+      setAgainstSelected(null);
+      toast.success("Round saved!");
     },
-    onError(){
-      toast.error('Saving round failed :(')
-    }
-  })
+    onError() {
+      toast.error("Saving round failed :(");
+    },
+  });
 
   return (
-    <div className="pb-24 w-[calc(100vw-20px)] flex flex-1 flex-col items-center justify-center text-3xl md:text-5xl">
+    <div className="flex w-[calc(100vw-20px)] flex-1 flex-col items-center justify-center pb-24 text-3xl md:text-5xl">
       <h2 className="mt-12">Save a New Round</h2>
       <h4 className="mt-4 text-4xl">{rn.format("MMM DD")}</h4>
       <h5 className="text-2xl">{rn.format("h:mm a")}</h5>
@@ -42,9 +42,17 @@ export default function GameStage({ game }: { game: LoadedGame }) {
           user={game.againstUser}
           isOwner={false}
         />
-
       </div>
-        {bothSelected && <button className="mt-12">Confirm</button>}
+      {bothSelected && (
+        <button
+          onClick={() =>
+            saveHand.mutate({ gameId: game.id, creatorThrew: creatorSelected, againstThrew: againstSelected})
+          }
+          className="mt-12"
+        >
+          Confirm
+        </button>
+      )}
     </div>
   );
 }

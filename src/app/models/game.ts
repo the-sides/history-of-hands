@@ -5,4 +5,4 @@ export interface LoadedGame extends Game {
     againstUser: User
 }
 
-export type typeOfHand = 'rock' | 'scissors' | 'paper'
+export type typeOfHand = 'ROCK' | 'SCISSORS' | 'PAPER'

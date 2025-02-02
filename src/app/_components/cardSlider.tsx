@@ -27,7 +27,7 @@ export default function CardSlider({selected, handleSelect, user, isOwner }: Car
         return <button onClick={() => handleSelect(type)} className="flex-shrink-0 w-[100px] h-[150px]  md:w-[210px]  md:h-[300px] bg-[#2D163F] rounded-md shadow-xl"><p className="text-xl md:text-[56px]">{type}</p></button>
     }
 
-    const types: typeOfHand[] = ['rock', 'paper', 'scissors']
+    const types: typeOfHand[] = ['ROCK', 'PAPER', 'SCISSORS']
     return <div className={`w-[calc(50%-2px)] md:w-[calc(50%-20px)] flex relative items-center overflowd-hidden transition-opacity ${selected ? 'mt-32 flex-col' : 'h-[calc(((50vw*sqrt(3))/3)+330px)]'} ${visible ? 'opacity-100' : 'opacity-0'}`} style={{ scrollbarWidth: 'none', maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
         <p className={` text-center max-w-[500px] text-2xl md:text-6xl h-fit z-10 ${selected ? '' : 'absolute top-16 sm:top-24 '} inset-x-0 mx-auto origin-center transition-transform ${selected === null && (isOwner ? 'rotate-[30deg]' : 'rotate-[-30deg]')}`}>{user.name} Threw:</p>
         {/* {selected === null ? */}
