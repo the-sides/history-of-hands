@@ -26,16 +26,22 @@ export function GameLister() {
     },
   });
 
+  const handleDelete = (gameId: number) => {
+    // Confirm deletion before deleting
+    if (!window.confirm("Are you sure you want to delete this game?")) return;
+    
+    setIsBeingDeleted([...isBeingDeleted, gameId])
+    deleteGame.mutate({ gameId });
+    setIsBeingDeleted((prev) => prev.filter((id) => id !== gameId));
+  };
+
 
   return (
     <div className="w-full text-[2rem] md:text-[4rem] max-w-fit">
       {games?.length > 0 ? (
         games.map((game, gameInd) =>
           <p key={'game-' + gameInd} className={isBeingDeleted.includes(game.id) ? 'opacity-50 cursor-not-allowed' : ''}>
-            <button onClick={() => {
-              setIsBeingDeleted([...isBeingDeleted, game.id])
-              deleteGame.mutate({ gameId: game.id })
-            }}>(x)</button> {' '}
+            <button onClick={() => handleDelete(game.id)}>(x)</button> {' '}
             {game.name} - <Link href={'/game/' + game.id}>View</Link></p>
         )
       ) : (

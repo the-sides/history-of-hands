@@ -40,8 +40,8 @@ function renderGameSwitch(game: LoadedGame) {
     if (!game.againstUser) {
         return (
             <div className="container pb-32">
-                <h2 className="text-display1">Players:</h2>
-                <div className="w-full px-20 space-y-8 text-3xl md:text-8xl">
+                <h2 className="px-3 text-5xl md:text-display1">Players:</h2>
+                <div className="mt-4 w-full px-20 space-y-3 md:space-y-8 text-3xl md:text-8xl">
                     <p className="text-blue-400">{game.createdByUser?.name}</p>
                     <CreateInvite gameId={game.id} />
                 </div>
