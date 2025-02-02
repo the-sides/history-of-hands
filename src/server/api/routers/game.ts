@@ -1,14 +1,8 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const gameRouter = createTRPCRouter({
-  hello: publicProcedure.input(z.object({ text: z.string() })).query(({ input }) => {
-    return {
-      greeting: `Hello ${input.text}`,
-    };
-  }),
-
   create: protectedProcedure.input(z.object({ name: z.string().min(1) })).mutation(async ({ ctx, input }) => {
     return ctx.db.game.create({
       data: {
@@ -106,16 +100,39 @@ export const gameRouter = createTRPCRouter({
     return res ?? null;
   }),
 
-  saveHand: protectedProcedure
-    .input(z.object({ gameId: z.number(), hand: z.string() }))
+  saveRound: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.number(),
+        creatorThrew: z.enum(["ROCK", "PAPER", "SCISSORS"]),
+        againstThrew: z.enum(["ROCK", "PAPER", "SCISSORS"]),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      // const game = await ctx.db.game.findFirstOrThrow({
-      //   where: { id: input.gameId },
-      // });
-      // return game;
+      const game = await ctx.db.game.findFirstOrThrow({
+        where: { id: input.gameId },
+      });
+
+      const isParticipating = [game.createdById, game.againstId].includes(ctx.session.user.id);
+      if (!isParticipating) {
+        throw new Error("User is not in this game");
+      }
+
+      return ctx.db.round.create({
+        data: {
+          againstThrew: input.againstThrew,
+          creatorThrew: input.creatorThrew,
+          // Undefined when game is made initially, but when you're able
+          // to save rounds, that's only possible when an againstId is defined
+          against: { connect: { id: game.againstId as string } },
+          createdBy: { connect: { id: game.createdById } },
+          game: { connect: { id: game.id } },
+        },
+      });
     }),
 
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  getRounds: protectedProcedure.input(z.object({ gameId: z.number() })).query(async ({ ctx, input }) => {
+    // To verify or not to verify? Who cares???
+    return ctx.db.round.findMany({ where: { gameId: input.gameId } });
   }),
 });

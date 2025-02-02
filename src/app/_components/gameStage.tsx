@@ -4,12 +4,24 @@ import dayjs from "dayjs";
 import type { LoadedGame, typeOfHand } from "../models/game";
 import CardSlider from "./cardSlider";
 import { useState } from "react";
+import { api } from "~/trpc/react";
+import { toast } from 'sonner'
+
 
 const rn = dayjs();
 export default function GameStage({ game }: { game: LoadedGame }) {
   const [creatorSelected, setCreatorSelected] = useState<typeOfHand | null>(null);
   const [againstSelected, setAgainstSelected] = useState<typeOfHand | null>(null);
   const bothSelected = creatorSelected && againstSelected;
+  const saveHand = api.game.saveRound.useMutation({
+    onSuccess(){
+      setCreatorSelected(null)
+      setAgainstSelected(null)
+    },
+    onError(){
+      toast.error('Saving round failed :(')
+    }
+  })
 
   return (
     <div className="pb-24 w-[calc(100vw-20px)] flex flex-1 flex-col items-center justify-center text-3xl md:text-5xl">

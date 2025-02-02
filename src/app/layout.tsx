@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import Nav from "./_components/Nav";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-gradient-to-br from-[#532A73] to-[#081B59] text-white">
         <TRPCReactProvider>
           <Nav />
+          <Toaster />
           {children}</TRPCReactProvider>
       </body>
     </html>
