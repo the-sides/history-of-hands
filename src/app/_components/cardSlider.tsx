@@ -29,7 +29,7 @@ export default function CardSlider({selected, handleSelect, user, isOwner }: Car
 
     const types: typeOfHand[] = ['ROCK', 'PAPER', 'SCISSORS']
     return <div className={`w-[calc(50%-2px)] md:w-[calc(50%-20px)] flex relative items-center overflowd-hidden transition-opacity ${selected ? 'mt-32 flex-col' : 'h-[calc(((50vw*sqrt(3))/3)+330px)]'} ${visible ? 'opacity-100' : 'opacity-0'}`} style={{ scrollbarWidth: 'none', maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
-        <p className={` text-center max-w-[500px] text-2xl md:text-6xl h-fit z-10 ${selected ? '' : 'absolute top-16 sm:top-24 '} inset-x-0 mx-auto origin-center transition-transform ${selected === null && (isOwner ? 'rotate-[30deg]' : 'rotate-[-30deg]')}`}>{user.name} Threw:</p>
+        <p className={` text-center max-w-[500px] text-2xl md:text-6xl h-fit z-10 ${selected ? '' : 'absolute top-16 sm:top-24 '} inset-x-0 mx-auto origin-center transition-transform ${selected === null && (isOwner ? 'rotate-[30deg]' : 'rotate-[-30deg]')}`}><span className={isOwner ? 'text-blue-400' : 'text-red-400'}>{user.name}</span> Threw:</p>
         {/* {selected === null ? */}
         {/* Needs better transition animations */}
         <div className={`flex items-center relative  ${selected && 'hidden opacity-0'} ${isOwner ? 'translate-x-[-20%]' : 'translate-x-[-20%]'}`}>

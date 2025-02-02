@@ -13,7 +13,7 @@ const emojis = {
 export default function RoundHistory({ rounds, game }: { rounds: UseTRPCQueryResult<Round[], TRPCClientErrorLike<any>>, game: LoadedGame }) {
   return (
     <div
-      className="judstify-center flex w-full items-center gap-12 overflow-auto px-12 py-6 transition-opacity"
+      className="md:flex w-full items-center gap-12 overflow-auto px-6 md:px-12 py-6 transition-opacity"
       style={{
         scrollbarWidth: "none",
         maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
@@ -33,11 +33,11 @@ export default function RoundHistory({ rounds, game }: { rounds: UseTRPCQueryRes
         return (
           <div
             key={round.id}
-            className="flex w-fit flex-shrink-0 flex-col items-center justify-center transition-opacity"
+            className="flex w-fit flex-shrink-0 gap-x-2 md:flex-col items-center justify-center transition-opacity"
           >
-            <p className="text-xl md:text-2xl">
-              {dayjs(round.createdAt.toLocaleString()).format("M/D")}{" "}
-              <span className={`pl-1 text-xl md:text-2xl ${winnerColor}`}>
+            <p className="text-xl md:text-2xl  min-w-[78px] md:min-w-[unset] ">
+              {dayjs(round.createdAt.toLocaleString()).format("MM/DD")}{" "}
+              <span className={`pl-1text-xl md:text-2xl ${winnerColor}`}>
                 {winner == "Tie" ? winner : winner.at(0)}
               </span>
               {winner !== "Tie" ? " Won" : ""}
