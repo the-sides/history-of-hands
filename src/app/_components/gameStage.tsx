@@ -6,20 +6,17 @@ import CardSlider from "./cardSlider";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
+import RoundHistory from "./roundHistory";
 
 // const winner = (creatorSelected: typeOfHand, againstSelected: typeOfHand) => {
 
 // }
-const emojis = {
-  ROCK: "🪨",
-  PAPER: "📝",
-  SCISSORS: "✂️",
-};
+
 
 export default function GameStage({ game }: { game: LoadedGame }) {
   const rn = dayjs();
   const rounds = api.game.getRounds.useQuery({ gameId: game.id });
-  console.log("rounds", rounds);
+  // console.log("rounds", rounds);
   const [creatorSelected, setCreatorSelected] = useState<typeOfHand | null>(null);
   const [againstSelected, setAgainstSelected] = useState<typeOfHand | null>(null);
   const bothSelected = creatorSelected && againstSelected;
@@ -67,34 +64,7 @@ export default function GameStage({ game }: { game: LoadedGame }) {
       )}
 
       <h4 className="mt-24 w-full text-center">History</h4>
-      <div className=" flex w-full gap-12 px-12 py-6 overflow-auto items-center judstify-center transition-opacity">
-        {rounds.data?.map((round) => {
-          let winner = "Tie";
-          let winnerColor = "text-neutral-400";
-          if (round.winnerId === game.createdByUser?.id) {
-            winner = game.createdByUser.name as string;
-            winnerColor = "text-blue-400";
-          } else if (round.winnerId === game.againstUser?.id) {
-            winner = game.againstUser?.name as string;
-            winnerColor = "text-red-400";
-          }
-          // const winnerElm = winner !== 'tie' ? <p className={`text-5xl md:text-9xl ${winnerColor}`}>{winner} Won </p>
-          return (
-            <div key={round.id} className="flex flex-shrink-0 w-fit flex-col items-center justify-center transition-opacity">
-              <p className="text-xl md:text-2xl">
-                {dayjs(round.createdAt.toLocaleString()).format("M/D")}
-                {" "}
-                <span className={`pl-1 text-xl md:text-2xl ${winnerColor}`}>{winner == 'Tie' ? winner : winner.at(0)}</span>
-                {winner !== "Tie" ? " Won" : ""}
-              </p>
-              <div className="flex gap-2">
-                <p className="text-xl md:text-2xl">{emojis[round.creatorThrew]}</p>
-                <p className="text-xl md:text-2xl">{emojis[round.againstThrew]}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <RoundHistory rounds={rounds} game={game}></RoundHistory>
     </div>
   );
 }
