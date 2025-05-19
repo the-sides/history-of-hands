@@ -15,14 +15,26 @@ export default async function Home() {
       <main className="flex flex-1 flex-col items-center justify-center">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           {!session?.user && (
-            <AuthButton
-              asSignIn
-              className="rounded-[90px] bg-white/10 px-10 text-[2rem] text-center py-3 font-semibold no-underline transition hover:bg-white/20"
-            >
-              <span className="text-[7rem] ">Sign in</span>
-              <br />
-              Uses discord, signs-up in the process
-            </AuthButton>
+            <>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="h-[198px] text-[12rem] rotate-12 ">
+                🤜
+              </div>
+              <div className="h-[198px] text-[12rem] rotate-[-105deg]">
+                ✌️
+              </div>
+              <div className="h-[198px] text-[12rem] ">
+                🫲
+              </div>
+            </div>
+              <AuthButton
+                asSignIn
+                className="rounded-[90px] bg-white/10 px-10 py-3 text-center font-semibold no-underline transition hover:bg-white/20"
+              >
+                <span className="text-xl">Sign in via discord</span>
+                <br />
+              </AuthButton>
+            </>
           )}
 
           {session?.user && <GameLister />}
