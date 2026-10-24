@@ -39,3 +39,9 @@ Saving is automatic: immediately on the phone, opportunistically in the backgrou
 **GitHub setup:** register an OAuth application with homepage `https://hoh.jacobsides.com` and callback `https://hoh.jacobsides.com/api/auth/callback/github`; set `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` on the Vercel production project and redeploy. Credentials never go into the APK. The native-only `/android/sign-in` page uses GitHub while the existing website's Discord flow remains available. Only a verified primary GitHub email can link to an existing email-based scorecard. Pending credentials replace the active device credential only after the server verifies the completed sign-in.
 
 Backend schema addition: `20261024010000_editable_android_history` adds `HandLog.revision` with default zero, preserving all existing rows. It was applied additively to production before introducing the v2 API.
+
+### Android 2.1
+
+The Play card has three throw controls: swipe up to record your win, down for your loss, or double-tap for a tie. The opponent's throw is inferred from the chosen throw and result. Each save offers Undo; holding a throw or using its accessibility actions also offers explicit results. Short, horizontal, cancelled, and multi-touch gestures do not save.
+
+History has visible selection checkboxes and a Bulk edit toggle. Select matching games, then edit either throw or the date; unchanged fields and individual times are preserved. Bulk corrections use one local transaction and support Undo. The launcher uses a full-frame adaptive icon without the legacy white surround.

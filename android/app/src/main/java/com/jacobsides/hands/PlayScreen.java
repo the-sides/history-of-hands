@@ -77,11 +77,23 @@ final class PlayScreen {
     LinearLayout head = row(a);
     TextView titleView = text(a, "Make it count.", 20, TEXT, true);
     head.addView(titleView, new LinearLayout.LayoutParams(0, -2, 1));
-    head.addView(text(a, "✊  ✋  ✌", 19, LIME, false));
+
     play.addView(head);
     gap(play, 8);
-    play.addView(text(a, "Two throws. A tap for each. Back to your day.", 12, MUTED, false));
-    play.addView(button(a, "+   Log a game", true, a::log));
+    play.addView(text(a, "Your throw. Your result. One gesture.", 12, MUTED, false));
+    gap(play, 16);
+    LinearLayout throwsRow = row(a);
+    for (int i = 0; i < 3; i++) {
+      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(a, 166), 1);
+      if (i < 2) p.rightMargin = dp(a, 8);
+      throwsRow.addView(new ThrowControl(a, i), p);
+    }
+    play.addView(throwsRow);
+    gap(play, 12);
+    play.addView(text(a, "Swipe ↑ win · ↓ loss · double-tap tie", 11, MUTED, false));
+    gap(play, 5);
+    play.addView(
+        text(a, "Hold a throw for result choices. Undo any slip below.", 10, MUTED, false));
     root.addView(play);
     if (stats.total() > 0) {
       LinearLayout latest = card(a);

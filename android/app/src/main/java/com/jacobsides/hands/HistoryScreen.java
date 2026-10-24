@@ -92,20 +92,29 @@ final class HistoryScreen {
                 a.historyDay = "";
                 a.render(false);
               }));
-    if (a.historyFilter != 4)
-      tools.addView(
-          chip(
-              a,
-              a.selecting ? "Done" : "Select",
-              a.selecting,
-              () -> {
-                a.selecting = !a.selecting;
-                a.selected.clear();
-                a.render(true);
-              }));
+    if (a.historyFilter != 4) {
+      CheckBox bulk = new CheckBox(a);
+      bulk.setText("Bulk edit");
+      bulk.setTextColor(TEXT);
+      bulk.setButtonTintList(android.content.res.ColorStateList.valueOf(LIME));
+      bulk.setChecked(a.selecting);
+      bulk.setOnCheckedChangeListener(
+          (v, checked) -> {
+            a.selecting = checked;
+            a.selected.clear();
+            a.render(true);
+          });
+      tools.addView(bulk);
+    }
     root.addView(tools);
     gap(root, 16);
     if (a.selecting && !a.selected.isEmpty()) {
+      root.addView(
+          button(
+              a,
+              "Edit " + a.selected.size() + " selected games",
+              true,
+              () -> BulkGameEditor.show(a, new ArrayList<>(a.selected))));
       root.addView(
           button(
               a,
@@ -181,6 +190,24 @@ final class HistoryScreen {
     }
     list.addView(label(a, rows.size() + " " + (a.historyFilter == 4 ? "DELETED GAMES" : "GAMES")));
     gap(list, 16);
+    if (a.selecting && !rows.isEmpty()) {
+      boolean allSelected = rows.stream().allMatch(r -> a.selected.contains(r.optString("id")));
+      list.addView(
+          chip(
+              a,
+              allSelected
+                  ? "Deselect matching games"
+                  : "Select all " + rows.size() + " matching games",
+              false,
+              () -> {
+                for (JSONObject r : rows) {
+                  if (allSelected) a.selected.remove(r.optString("id"));
+                  else a.selected.add(r.optString("id"));
+                }
+                a.render(true);
+              }));
+      gap(list, 12);
+    }
     String day = "";
     int shown = 0;
     for (JSONObject r : rows) {
@@ -202,7 +229,7 @@ final class HistoryScreen {
       LinearLayout card = card(a);
       card.setPadding(dp(a, 16), dp(a, 16), dp(a, 16), dp(a, 16));
       LinearLayout row = row(a);
-      if (a.selecting) {
+      if (a.historyFilter != 4) {
         CheckBox selected = new CheckBox(a);
         selected.setButtonTintList(android.content.res.ColorStateList.valueOf(LIME));
         selected.setChecked(a.selected.contains(r.optString("id")));
@@ -210,6 +237,7 @@ final class HistoryScreen {
             "Select game from " + MainActivity.when(r.optString("playedAt"), "MMM d h:mm a"));
         selected.setOnCheckedChangeListener(
             (b, checked) -> {
+              a.selecting = true;
               if (checked) a.selected.add(r.optString("id"));
               else a.selected.remove(r.optString("id"));
               a.render(true);

@@ -30,3 +30,9 @@ OAuth homepage: `https://hoh.jacobsides.com`. Callback: `https://hoh.jacobsides.
 The initial cached Vercel build exposed a stale generated Prisma client. The build script now regenerates the client before every Next.js build; the corrected deployment completed successfully. The live APK matched the signed local artifact (`af45b4ef3cefa6d9208537cb694b6235240e4eb415b0cff1dcc6121fb9e28d0d`).
 
 Both old and v2 API integration suites passed against production. A signed-app account-connection fixture uploaded twelve local records, including corrections and trash. A newer server-side throw/date correction then downloaded automatically and appeared in dated native History. This verifies the app/server connection and data flow using an authenticated fixture; it does not substitute for the real GitHub OAuth consent flow, whose real callback was subsequently verified after correcting the issuer configuration. All fixture users, sessions, linked credentials, and history rows were deleted afterward.
+
+## Android 2.1 follow-through
+
+Signed versionCode 4 / 2.1.0 includes the adaptive full-frame launcher icon, three gesture controls (up win, down loss, completed double-tap tie), haptic confirmation and Undo. Visible History checkboxes and matching-game selection feed an atomic bulk editor for either throw or date, preserving unspecified fields and individual times. Bulk Undo restores each original record.
+
+Release build, lint error checks, and all nine JVM tests passed, including all nine throw/result combinations. Emulator interaction checks confirmed each gesture adds exactly one game, Undo restores the count, short/horizontal gestures do not save, and selecting two checkboxes then bulk editing and undoing completes successfully. Only emulator fixtures were used.

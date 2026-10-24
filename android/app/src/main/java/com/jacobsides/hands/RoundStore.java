@@ -198,6 +198,25 @@ public final class RoundStore extends SQLiteOpenHelper {
       throw new IllegalArgumentException("Game not found");
   }
 
+  /** Atomic bulk correction; also used to restore each game's original values on Undo. */
+  public synchronized void editMany(JSONArray games) {
+    var db = getWritableDatabase();
+    db.beginTransaction();
+    try {
+      for (int i = 0; i < games.length(); i++) {
+        JSONObject game = games.optJSONObject(i);
+        edit(
+            game.optString("id"),
+            game.optString("mine"),
+            game.optString("hers"),
+            game.optString("playedAt"));
+      }
+      db.setTransactionSuccessful();
+    } finally {
+      db.endTransaction();
+    }
+  }
+
   public synchronized void setDeleted(String id, boolean deleted) {
     ContentValues v = new ContentValues();
     v.put("deleted", deleted ? 1 : 0);

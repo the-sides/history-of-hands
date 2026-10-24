@@ -40,7 +40,12 @@ adb('shell','am','force-stop','com.jacobsides.hands')
 adb('shell','am','start','-n','com.jacobsides.hands/.MainActivity');time.sleep(.8)
 wins,losses=score('YOUR WINS'),score('HER WINS')
 click('History tab',True);baseline=count('GAMES');click('Play tab',True)
-click('+   Log a game');click('You threw rock',True);click('She threw rock',True)
+# Scroll from the outer gutter so the throw controls do not consume the scroll as a game.
+adb('shell','input','swipe','1000','1800','1000','700','350');time.sleep(.4)
+node=next(n for n in dump().iter('node') if n.get('content-desc','').startswith('Rock. Swipe'))
+x1,y1,x2,y2=map(int,re.findall(r'\d+',node.get('bounds','')))
+x,y=(x1+x2)//2,(y1+y2)//2
+adb('shell','input','swipe',str(x),str(y),str(x),str(y),'650');click('Tie')
 click('History tab',True);assert count('GAMES')==baseline+1;click('Edit game:',True,True)
 click('Your throw: Paper',True);click('Her throw: Rock',True);click('Change game date and time',True)
 from datetime import date,timedelta
