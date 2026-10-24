@@ -30,6 +30,8 @@ export function githubProvider(clientId: string, clientSecret: string) {
   return GitHubProvider({
     clientId,
     clientSecret,
+    // GitHub includes this RFC 9207 issuer in authorization callbacks.
+    issuer: "https://github.com/login/oauth",
     allowDangerousEmailAccountLinking: true,
     userinfo: {
       url: "https://api.github.com/user",
