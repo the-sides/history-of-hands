@@ -67,6 +67,7 @@ public final class HandsWidget extends AppWidgetProvider {
     JSONArray rounds = store.all(false);
     RemoteViews views = new RemoteViews(c.getPackageName(), R.layout.hands_widget);
     views.setTextViewText(R.id.advice, summary[1]);
+    views.setTextColor(R.id.advice, Design.LIME);
     views.setTextViewText(R.id.score, summary[0]);
     views.setTextViewText(
         R.id.status,

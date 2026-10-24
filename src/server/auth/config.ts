@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import { githubProvider } from "./github";
 
 import { db } from "~/server/db";
 
@@ -32,9 +33,12 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+      ? [githubProvider(process.env.AUTH_GITHUB_ID, process.env.AUTH_GITHUB_SECRET)]
+      : []),
     DiscordProvider({
       clientId: process.env.AUTH_DISCORD_ID,
-      clientSecret: process.env.AUTH_DISCORD_SECRET
+      clientSecret: process.env.AUTH_DISCORD_SECRET,
     }),
     /**
      * ...add more providers here.

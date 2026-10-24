@@ -67,9 +67,14 @@ export async function POST(request: Request) {
       db.handLog.upsert({
         where: { userId_id: { userId, id: r.id } },
         create: { ...r, playedAt: new Date(r.playedAt), userId },
-        update: r.deleted ? { deleted: true } : {},
+        update: {},
       }),
     ),
   );
+  // Old clients cannot overwrite edits or resurrect/erase a newer Android revision.
+  await db.handLog.updateMany({
+    where: { userId, revision: BigInt(0), id: { in: parsed.data.rounds.filter((r) => r.deleted).map((r) => r.id) } },
+    data: { deleted: true },
+  });
   return NextResponse.json({ ok: true });
 }

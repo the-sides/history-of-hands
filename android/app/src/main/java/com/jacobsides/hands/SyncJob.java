@@ -47,33 +47,118 @@ public final class SyncJob extends JobService {
     String token = c.getSharedPreferences("hands", 0).getString("token", "");
     if (token.isEmpty()) return true;
     try {
-      JSONObject remote = call("GET", token, null);
+      var prefs = c.getSharedPreferences("hands", 0);
+      prefs.edit().putString("sync_state", "syncing").apply();
+      notifyChanged(c);
       RoundStore store = RoundStore.get(c);
-      store.merge(remote.getJSONArray("rounds"));
-      JSONArray all = store.all(true);
-      for (int start = 0; start < all.length(); start += 250) {
-        JSONArray batch = new JSONArray();
-        for (int i = start; i < Math.min(start + 250, all.length()); i++) batch.put(all.get(i));
-        call("POST", token, new JSONObject().put("rounds", batch));
+      if (!token.equals(prefs.getString("token", ""))) return true;
+      JSONObject remote = call("GET", token, null);
+      JSONObject user = remote.getJSONObject("user");
+      String previous = prefs.getString("account_id", "");
+      if (!previous.isEmpty() && !previous.equals(user.getString("id"))) {
+        prefs.edit().putString("sync_state", "account_changed").apply();
+        notifyChanged(c);
+        return false;
       }
-      c.getSharedPreferences("hands", 0)
+      store.merge(remote.getJSONArray("rounds"));
+      JSONArray pending = store.pending();
+      for (int start = 0; start < pending.length(); start += 250) {
+        JSONArray batch = new JSONArray();
+        for (int i = start; i < Math.min(start + 250, pending.length()); i++)
+          batch.put(pending.get(i));
+        call("POST", token, new JSONObject().put("rounds", batch));
+        store.acknowledge(batch);
+      }
+      if (pending.length() > 0) {
+        remote = call("GET", token, null);
+        store.merge(remote.getJSONArray("rounds"));
+      }
+      if (!token.equals(prefs.getString("token", ""))) return true;
+      prefs
           .edit()
-          .putString("backup", "Backed up to your account")
+          .putString("account_id", user.getString("id"))
+          .putString("account_name", user.optString("name", "You"))
+          .putBoolean("github", user.optBoolean("github", false))
+          .putLong("last_sync", System.currentTimeMillis())
+          .putString("sync_state", store.pendingCount() > 0 ? "pending" : "saved")
+          .putString("backup", "All games saved to your account")
           .apply();
+      notifyChanged(c);
       HandsWidget.update(c);
       return true;
     } catch (Exception e) {
       c.getSharedPreferences("hands", 0)
           .edit()
-          .putString("backup", "Saved on phone · backup pending")
+          .putString("sync_state", e instanceof SignInRequired ? "signin" : "offline")
+          .putString("backup", "Saved on phone · will upload automatically")
           .apply();
+      notifyChanged(c);
       return false;
     }
   }
 
+  public static synchronized boolean acceptSignIn(Context c) {
+    var prefs = c.getSharedPreferences("hands", 0);
+    String pending = prefs.getString("pending_token", "");
+    if (pending.isEmpty()) return false;
+    try {
+      JSONObject remote = call("GET", pending, null);
+      if (!remote.getJSONObject("user").optBoolean("github")) return false;
+      disconnect(c);
+      prefs
+          .edit()
+          .putString("token", pending)
+          .remove("pending_token")
+          .remove("account_id")
+          .remove("account_name")
+          .putString("sync_state", "pending")
+          .commit();
+      RoundStore.get(c).prepareForAccount();
+      return sync(c);
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public static void notifyChanged(Context c) {
+    c.sendBroadcast(
+        new android.content.Intent("com.jacobsides.hands.DATA_CHANGED")
+            .setPackage(c.getPackageName()));
+  }
+
+  private static final class SignInRequired extends Exception {}
+
+  public static void disconnect(Context c) {
+    String token = c.getSharedPreferences("hands", 0).getString("token", "");
+    if (token.isEmpty()) return;
+    new Thread(
+            () -> {
+              try {
+                java.net.HttpURLConnection connection =
+                    (java.net.HttpURLConnection)
+                        new java.net.URL("https://hoh.jacobsides.com/api/android/account")
+                            .openConnection();
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+                connection.setRequestMethod("DELETE");
+                connection.setRequestProperty("Authorization", "Bearer " + token);
+                try {
+                  connection.getResponseCode();
+                } finally {
+                  connection.disconnect();
+                }
+              } catch (Exception ignored) {
+              }
+            },
+            "hands-sign-out")
+        .start();
+    c.getSystemService(android.app.job.JobScheduler.class).cancel(1);
+  }
+
   private static JSONObject call(String method, String token, JSONObject body) throws Exception {
     HttpURLConnection connection =
-        (HttpURLConnection) new URL("https://hoh.jacobsides.com/api/hand-history").openConnection();
+        (HttpURLConnection)
+            new URL("https://hoh.jacobsides.com/api/android/history").openConnection();
     connection.setConnectTimeout(10000);
     connection.setReadTimeout(15000);
     connection.setRequestMethod(method);
@@ -87,6 +172,7 @@ public final class SyncJob extends JobService {
           out.write(body.toString().getBytes(StandardCharsets.UTF_8));
         }
       }
+      if (connection.getResponseCode() == 401) throw new SignInRequired();
       if (connection.getResponseCode() != 200)
         throw new IllegalStateException("Backup unavailable");
       try (var stream = connection.getInputStream()) {

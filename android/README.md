@@ -25,3 +25,17 @@ For a signed personal release, supply `HANDS_KEYSTORE` and `HANDS_STORE_PASSWORD
 ## Verification
 
 JVM tests cover all nine outcomes, minimum evidence, balanced throws, and deleted-round filtering. Android Lint runs for debug/release. The emulator acceptance flow uses the real launcher-hosted widget, confirms the foreground remains the launcher after a log, checks score and undo, then launches the shortcut picker and confirms it dismisses after logging. The web API integration test covers device pairing, digest storage, bearer auth, and revocation in addition to legacy import and isolation.
+
+## Version 2: Android redesign
+
+The website UI is unchanged. Android now has **Play**, **Insights**, **History**, and **Account** tabs, a dark Manrope-based design, and a matching quick picker and widget. History is grouped by local date and shows each game's time. Tap a game to edit either throw and its date/time. Filters, search, multi-select, reversible trash, restore, and export/import are available directly in the app.
+
+Insights supports 7-day, 30-day, and all-time ranges, decisive win rate (ties excluded), a daily stacked chart, both players' throw statistics, per-throw performance, streaks, a matchup matrix, and observed repeat-after-result patterns. Sparse samples are labeled explicitly.
+
+SQLite upgrades in place to schema 2 using additive columns, preserving all v1 data. Each edit, deletion, and restore has a monotonically increasing revision. Only pending changes upload; acknowledgments match both ID and revision so edits made during an upload remain pending. The v2 history API conditionally applies newer revisions. Older exports and old-client tombstones cannot overwrite a corrected or restored game. Trash remains recoverable and is excluded from analytics.
+
+Saving is automatic: immediately on the phone, opportunistically in the background, and while the app is open. Account shows the current save state and last successful save. There is no manual sync button. Signing out retains phone data and pauses backup.
+
+**GitHub setup:** register an OAuth application with homepage `https://hoh.jacobsides.com` and callback `https://hoh.jacobsides.com/api/auth/callback/github`; set `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` on the Vercel production project and redeploy. Credentials never go into the APK. The native-only `/android/sign-in` page uses GitHub while the existing website's Discord flow remains available. Only a verified primary GitHub email can link to an existing email-based scorecard. Pending credentials replace the active device credential only after the server verifies the completed sign-in.
+
+Backend schema addition: `20261024010000_editable_android_history` adds `HandLog.revision` with default zero, preserving all existing rows. It was applied additively to production before introducing the v2 API.

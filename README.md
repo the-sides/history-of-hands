@@ -54,3 +54,7 @@ The service worker caches the public shell and its static assets, never authenti
 Install [Hands for Android](https://hoh.jacobsides.com/downloads/hands.apk) (Android 13+), open it once to connect backup, and add its widget. Tap the **your throw / her throw** pairing to save without opening an activity. Alternatively, hold the Hands icon, choose your throw, and pick hers in the compact popup. The menu and widget also show the current advice. See [Android setup and build details](android/README.md).
 
 The second additive migration creates `HandDevice` for revocable hashed device credentials. It was applied without changing existing rounds. A device token only authorizes the scorecard API; browser approval is required to link it.
+
+### Android 2.0
+
+The Android redesign adds dark styling, dated/editable game history, reversible trash and bulk selection, richer analytics, and automatic saving. GitHub sign-in is configured with `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` using callback `https://hoh.jacobsides.com/api/auth/callback/github`. Its native sign-in page and versioned editing API are separate from the existing website UI. See [Android details](android/README.md).

@@ -125,6 +125,7 @@ model HandLog {
     hers ThrowType
     playedAt DateTime
     deleted Boolean @default(false)
+    revision BigInt @default(0)
 
     @@id([userId, id])
 }

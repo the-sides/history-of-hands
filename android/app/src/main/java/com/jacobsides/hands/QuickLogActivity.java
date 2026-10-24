@@ -1,88 +1,130 @@
 package com.jacobsides.hands;
 
+import static com.jacobsides.hands.Design.*;
+
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public final class QuickLogActivity extends Activity {
+  private String mine;
+
   public void onCreate(Bundle state) {
     super.onCreate(state);
-    getSystemService(android.content.pm.ShortcutManager.class)
-        .reportShortcutUsed("throw-" + RoundStore.index(getIntent().getStringExtra("mine")));
-    String mine = getIntent().getStringExtra("mine");
-    if (RoundStore.index(mine) < 0) {
-      finish();
-      return;
-    }
-    LinearLayout box = new LinearLayout(this);
-    box.setOrientation(LinearLayout.VERTICAL);
-    box.setPadding(28, 30, 28, 20);
-    GradientDrawable bg = new GradientDrawable();
-    bg.setColor(Color.parseColor("#f4f0e7"));
-    bg.setCornerRadius(36);
-    box.setBackground(bg);
-    TextView title = new TextView(this);
-    title.setText(
-        "You threw "
-            + RoundStore.label(mine).toLowerCase(java.util.Locale.ROOT)
-            + ".\nWhat did she throw?");
-    title.setTextSize(22);
-    title.setTextColor(Color.parseColor("#25392f"));
-    title.setTypeface(Typeface.create("serif", Typeface.NORMAL));
-    box.addView(title);
-    LinearLayout choices = new LinearLayout(this);
-    choices.setOrientation(LinearLayout.HORIZONTAL);
-    choices.setPadding(0, 20, 0, 0);
+    mine = state != null ? state.getString("mine") : getIntent().getStringExtra("mine");
+    if (RoundStore.index(mine) < 0) mine = null;
+    else
+      getSystemService(android.content.pm.ShortcutManager.class)
+          .reportShortcutUsed("throw-" + RoundStore.index(mine));
+    render();
+  }
+
+  protected void onSaveInstanceState(Bundle state) {
+    super.onSaveInstanceState(state);
+    state.putString("mine", mine);
+  }
+
+  private void render() {
+    LinearLayout box = column(this);
+    box.setPadding(dp(this, 22), dp(this, 20), dp(this, 22), dp(this, 24));
+    box.setBackground(background(SURFACE, 28, this));
+    TextView handle = text(this, "━━", 17, LINE, true);
+    handle.setGravity(Gravity.CENTER);
+    box.addView(handle);
+    gap(box, 16);
+    box.addView(label(this, mine == null ? "LOG A GAME  /  01" : "LOG A GAME  /  02"));
+    gap(box, 12);
+    box.addView(
+        text(
+            this,
+            mine == null ? "What did you throw?" : "And what did she throw?",
+            26,
+            TEXT,
+            true));
+    gap(box, 10);
+    box.addView(
+        text(
+            this,
+            mine == null
+                ? "Your throw, then hers. That’s the whole thing."
+                : "You chose "
+                    + RoundStore.label(mine).toLowerCase(java.util.Locale.ROOT)
+                    + " "
+                    + RoundStore.SYMBOLS[RoundStore.index(mine)]
+                    + ". Tap hers to save.",
+            12,
+            MUTED,
+            false));
+    gap(box, 22);
+    LinearLayout choices = row(this);
     for (int i = 0; i < 3; i++) {
-      final String hers = RoundStore.THROWS[i];
-      Button button = new Button(this);
-      button.setText(RoundStore.SYMBOLS[i] + "\n" + RoundStore.label(hers));
-      button.setAllCaps(false);
-      button.setTextSize(16);
-      button.setBackgroundTintList(
-          android.content.res.ColorStateList.valueOf(Color.parseColor("#e8eacb")));
-      button.setTextColor(Color.parseColor("#25392f"));
-      choices.addView(button, new LinearLayout.LayoutParams(0, 150, 1));
-      button.setOnClickListener(
+      final String value = RoundStore.THROWS[i];
+      LinearLayout choice = column(this);
+      choice.setGravity(Gravity.CENTER);
+      choice.setPadding(dp(this, 4), dp(this, 20), dp(this, 4), dp(this, 20));
+      choice.setBackground(background(RAISED, 20, this));
+      choice.addView(text(this, RoundStore.SYMBOLS[i], 36, TEXT, false));
+      gap(choice, 14);
+      choice.addView(text(this, RoundStore.label(value), 12, TEXT, true));
+      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(this, 124), 1);
+      if (i < 2) p.rightMargin = dp(this, 10);
+      choices.addView(choice, p);
+      choice.setContentDescription(
+          (mine == null ? "You" : "She") + " threw " + value.toLowerCase(java.util.Locale.ROOT));
+      choice.setOnClickListener(
           v -> {
-            try {
-              RoundStore.get(this).log(mine, hers);
-              String result = RoundStore.outcome(mine, hers);
-              String message =
-                  (result.equals("win")
-                          ? "You win!"
-                          : result.equals("loss") ? "She wins." : "A tie.")
-                      + " Saved.";
-              HandsWidget.status(this, message);
-              HandsWidget.update(this);
-              SyncJob.schedule(this);
-              Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-              finish();
-            } catch (Exception e) {
-              Toast.makeText(this, "Couldn't save. Check storage in Hands.", Toast.LENGTH_LONG)
-                  .show();
+            if (mine == null) {
+              mine = value;
+              render();
+            } else {
+              try {
+                RoundStore.get(this).log(mine, value);
+                String outcome = RoundStore.outcome(mine, value);
+                String message =
+                    (outcome.equals("win")
+                            ? "You win!"
+                            : outcome.equals("loss") ? "She wins." : "A tie.")
+                        + " Game saved.";
+                HandsWidget.status(this, message);
+                HandsWidget.update(this);
+                SyncJob.schedule(this);
+                SyncJob.notifyChanged(this);
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                finish();
+              } catch (Exception e) {
+                Toast.makeText(
+                        this, "Couldn't save. Check phone storage in Hands.", Toast.LENGTH_LONG)
+                    .show();
+              }
             }
           });
     }
     box.addView(choices);
-    TextView hint = new TextView(this);
-    hint.setText("Saves on your phone. No connection needed.");
-    hint.setTextSize(11);
-    hint.setTextColor(Color.parseColor("#72766b"));
-    hint.setPadding(0, 15, 0, 0);
-    box.addView(hint);
+    gap(box, 16);
+    if (mine != null)
+      box.addView(
+          button(
+              this,
+              "↶  Change your throw",
+              false,
+              () -> {
+                mine = null;
+                render();
+              }));
+    gap(box, 12);
+    box.addView(
+        text(
+            this,
+            "●  Saved on your phone instantly. Correct any game in History.",
+            10,
+            MUTED,
+            false));
     setContentView(box);
-    getWindow()
-        .setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+    getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+    getWindow().setLayout(-1, -2);
     getWindow().setGravity(Gravity.BOTTOM);
     setFinishOnTouchOutside(true);
   }
