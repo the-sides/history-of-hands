@@ -44,3 +44,9 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# Android build outputs and local signing material
+android/.gradle/
+android/**/build/
+android/local.properties
+*.keystore

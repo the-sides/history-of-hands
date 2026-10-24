@@ -1,0 +1,4 @@
+<resources>
+<style name="HandsTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#ba593e</item><item name="android:windowLightStatusBar">true</item><item name="android:statusBarColor">#f4f0e7</item><item name="android:navigationBarColor">#f4f0e7</item><item name="android:windowActionModeOverlay">true</item><item name="android:windowLightNavigationBar">true</item></style>
+<style name="QuickTheme" parent="android:style/Theme.Material.Light.Dialog.NoActionBar"><item name="android:windowIsTranslucent">true</item><item name="android:windowBackground">@android:color/transparent</item><item name="android:backgroundDimAmount">0.35</item><item name="android:colorAccent">#ba593e</item><item name="android:windowCloseOnTouchOutside">true</item></style>
+</resources>

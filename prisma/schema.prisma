@@ -104,6 +104,8 @@ model User {
 
     Round     Round[]
     wonRounds Round[] @relation("RoundsWon")
+    handLogs HandLog[]
+    handDevices HandDevice[]
 }
 
 model VerificationToken {
@@ -112,4 +114,25 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+// Personal scorecard: no game creation, opponent account, or invite required.
+model HandLog {
+    id String
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    mine ThrowType
+    hers ThrowType
+    playedAt DateTime
+    deleted Boolean @default(false)
+
+    @@id([userId, id])
+}
+
+// A random per-device credential; only its SHA-256 digest is stored server-side.
+model HandDevice {
+    tokenHash String @id
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
 }
