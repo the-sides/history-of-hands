@@ -36,3 +36,9 @@ Both old and v2 API integration suites passed against production. A signed-app a
 Signed versionCode 4 / 2.1.0 includes the adaptive full-frame launcher icon, three gesture controls (up win, down loss, completed double-tap tie), haptic confirmation and Undo. Visible History checkboxes and matching-game selection feed an atomic bulk editor for either throw or date, preserving unspecified fields and individual times. Bulk Undo restores each original record.
 
 Release build, lint error checks, and all nine JVM tests passed, including all nine throw/result combinations. Emulator interaction checks confirmed each gesture adds exactly one game, Undo restores the count, short/horizontal gestures do not save, and selecting two checkboxes then bulk editing and undoing completes successfully. Only emulator fixtures were used.
+
+## Android 2.2 automatic saving and conflicts
+
+The app has no manual sync button. Added network-constrained periodic background refresh, in addition to automatic save/resume/foreground syncing. SQLite v3 tracks each game's base server revision and keeps conflicting account snapshots separately. The review card compares both throws, timestamps, and trash status and offers Keep phone, Keep account, or Decide later. Nonconflicting games continue to upload. Account switches reset baseline metadata.
+
+API integration checks cover competing updates, higher-clock stale edits, delete/edit collisions, explicit resolution, retry idempotence, concurrent compare-and-swap, and unrelated uploads in a conflicting batch. Executable debug-only emulator storage checks cover base retention, local preservation, blocked conflict upload, unrelated changes, both resolutions, and edits made while an earlier upload is acknowledged. UI checks cover comparison, deferral, and account resolution. Release build, nine JVM tests, Android lint error checks, and web lint/typechecking passed. Older APKs must be upgraded to get conflict review.

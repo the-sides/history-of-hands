@@ -177,6 +177,6 @@ final class AccountScreen {
                           })
                       .show()));
     gap(root, 20);
-    root.addView(text(a, "HANDS 2.0  /  BUILT FOR YOU TWO", 9, MUTED, true));
+    root.addView(text(a, "HANDS 2.2  /  BUILT FOR YOU TWO", 9, MUTED, true));
   }
 }

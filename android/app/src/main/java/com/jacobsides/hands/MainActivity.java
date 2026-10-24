@@ -147,6 +147,8 @@ public final class MainActivity extends Activity {
     String state = p.getString("sync_state", "pending");
     int n = RoundStore.get(this).pendingCount();
     switch (state) {
+      case "conflict":
+        return "Choose which game details to keep";
       case "syncing":
         return "Saving to your account…";
       case "signin":
@@ -193,6 +195,29 @@ public final class MainActivity extends Activity {
     cloudLabel.setContentDescription("Save status: " + cloudStatus());
     content.addView(cloudLabel);
     gap(content, 26);
+    int conflicts = RoundStore.get(this).conflicts().length();
+    if (conflicts > 0) {
+      LinearLayout conflict = card(this);
+      conflict.addView(
+          text(
+              this,
+              conflicts + " game" + (conflicts == 1 ? " needs" : "s need") + " your choice",
+              18,
+              CORAL,
+              true));
+      gap(conflict, 8);
+      conflict.addView(
+          text(
+              this,
+              "This phone and another device changed the same game. Both versions are safe. Choose"
+                  + " which details to keep.",
+              12,
+              MUTED,
+              false));
+      conflict.addView(
+          button(this, "Review conflicting games", true, () -> ConflictReview.show(this)));
+      content.addView(conflict);
+    }
     switch (tab) {
       case 1:
         InsightsScreen.show(this, content);

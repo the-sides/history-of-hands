@@ -16,6 +16,21 @@ try{
  await send('/api/android/history','POST',{rounds:[{...correction,deleted:false,revision:400}]});
  // The unchanged website or v1 Android client cannot erase a restored / corrected v2 game.
  await send('/api/hand-history','POST',{rounds:[{...game,deleted:true}]});data=await (await send('/api/android/history')).json();assert.equal(data.rounds[0].deleted,false);assert.equal(data.rounds[0].revision,400);assert.equal(data.rounds[0].mine,'PAPER');
+ // Both devices edited revision 400. Only the first can commit, even if the other has a higher clock.
+ const first={...correction,mine:'SCISSORS',hers:'PAPER',revision:500,baseRevision:400};
+ let result=await (await send('/api/android/history','POST',{rounds:[first]})).json();assert.deepEqual(result.accepted,[game.id]);
+ const competing={...correction,mine:'ROCK',hers:'PAPER',deleted:true,revision:900,baseRevision:400};
+ result=await (await send('/api/android/history','POST',{rounds:[competing]})).json();assert.equal(result.conflicts[0].revision,500);assert.deepEqual(result.accepted,[]);
+ data=await (await send('/api/android/history')).json();assert.equal(data.rounds[0].mine,'SCISSORS');assert.equal(data.rounds[0].deleted,false);
+ // Explicit user choice based on latest remote revision can now replace it.
+ result=await (await send('/api/android/history','POST',{rounds:[{...competing,baseRevision:500}]})).json();assert.deepEqual(result.accepted,[game.id]);
+ // A lost response and retry of the exact accepted record must be idempotent.
+ result=await (await send('/api/android/history','POST',{rounds:[{...competing,baseRevision:500}]})).json();assert.deepEqual(result.accepted,[game.id]);
+ const racing=[{...correction,revision:1000,baseRevision:900},{...correction,mine:'ROCK',revision:1100,baseRevision:900}];
+ const raced=await Promise.all(racing.map(async r=>(await send('/api/android/history','POST',{rounds:[r]})).json()));
+ assert.equal(raced.reduce((n,r)=>n+r.accepted.length,0),1);assert.equal(raced.reduce((n,r)=>n+r.conflicts.length,0),1);
+ const unrelated={...game,id:randomUUID(),revision:100,baseRevision:-1};
+ result=await (await send('/api/android/history','POST',{rounds:[competing,unrelated]})).json();assert.deepEqual(result.accepted,[unrelated.id]);assert.equal(result.conflicts.length,1);
  assert.equal((await send('/api/android/history','POST',{rounds:[{...game,revision:-1}]})).status,400);
  assert.equal((await send('/api/android/history','POST',{rounds:[{...game,playedAt:'yesterday'}]})).status,400);
  assert.equal((await fetch(base+'/api/android/history')).status,401);

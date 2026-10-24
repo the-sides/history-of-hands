@@ -18,6 +18,14 @@ public final class SyncJob extends JobService {
   public static void schedule(Context c) {
     if (c.getSharedPreferences("hands", 0).getString("token", "").isEmpty()) return;
     JobScheduler scheduler = c.getSystemService(JobScheduler.class);
+    if (scheduler.getPendingJob(2) == null) {
+      scheduler.schedule(
+          new JobInfo.Builder(2, new ComponentName(c, SyncJob.class))
+              .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+              .setPersisted(true)
+              .setPeriodic(15 * 60 * 1000L)
+              .build());
+    }
     scheduler.schedule(
         new JobInfo.Builder(1, new ComponentName(c, SyncJob.class))
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
@@ -66,8 +74,23 @@ public final class SyncJob extends JobService {
         JSONArray batch = new JSONArray();
         for (int i = start; i < Math.min(start + 250, pending.length()); i++)
           batch.put(pending.get(i));
-        call("POST", token, new JSONObject().put("rounds", batch));
-        store.acknowledge(batch);
+        JSONObject result = call("POST", token, new JSONObject().put("rounds", batch));
+        JSONArray collisions = result.optJSONArray("conflicts");
+        if (collisions != null)
+          for (int i = 0; i < collisions.length(); i++)
+            store.rememberConflict(collisions.getJSONObject(i));
+        JSONArray accepted = result.optJSONArray("accepted");
+        if (accepted == null) throw new IllegalStateException("Update required");
+        JSONArray acknowledged = new JSONArray();
+        for (int i = 0; i < batch.length(); i++) {
+          JSONObject row = batch.getJSONObject(i);
+          for (int j = 0; j < accepted.length(); j++)
+            if (row.optString("id").equals(accepted.optString(j))) {
+              acknowledged.put(row);
+              break;
+            }
+        }
+        store.acknowledge(acknowledged);
       }
       if (pending.length() > 0) {
         remote = call("GET", token, null);
@@ -80,7 +103,11 @@ public final class SyncJob extends JobService {
           .putString("account_name", user.optString("name", "You"))
           .putBoolean("github", user.optBoolean("github", false))
           .putLong("last_sync", System.currentTimeMillis())
-          .putString("sync_state", store.pendingCount() > 0 ? "pending" : "saved")
+          .putString(
+              "sync_state",
+              store.conflicts().length() > 0
+                  ? "conflict"
+                  : store.pendingCount() > 0 ? "pending" : "saved")
           .putString("backup", "All games saved to your account")
           .apply();
       notifyChanged(c);
@@ -153,6 +180,7 @@ public final class SyncJob extends JobService {
             "hands-sign-out")
         .start();
     c.getSystemService(android.app.job.JobScheduler.class).cancel(1);
+    c.getSystemService(android.app.job.JobScheduler.class).cancel(2);
   }
 
   private static JSONObject call(String method, String token, JSONObject body) throws Exception {

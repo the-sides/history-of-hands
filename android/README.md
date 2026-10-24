@@ -45,3 +45,9 @@ Backend schema addition: `20261024010000_editable_android_history` adds `HandLog
 The Play card has three throw controls: swipe up to record your win, down for your loss, or double-tap for a tie. The opponent's throw is inferred from the chosen throw and result. Each save offers Undo; holding a throw or using its accessibility actions also offers explicit results. Short, horizontal, cancelled, and multi-touch gestures do not save.
 
 History has visible selection checkboxes and a Bulk edit toggle. Select matching games, then edit either throw or the date; unchanged fields and individual times are preserved. Bulk corrections use one local transaction and support Undo. The launcher uses a full-frame adaptive icon without the legacy white surround.
+
+### Android 2.2 automatic saving and conflicts
+
+There is no Sync now control. Saves upload automatically, foreground refreshes run every 20 seconds, and Android schedules network-constrained periodic background refreshes (15-minute minimum; the OS may defer them). Offline saves retry automatically.
+
+Each upload carries the server revision it was based on. Competing edits, including trash-versus-edit changes, preserve the phone copy and account copy and stop that game's upload. A persistent review card asks which version to keep; Decide later keeps both safe while unrelated games continue syncing. Server compare-and-swap checks catch races between downloading and uploading. Older installed APKs retain their previous revision behavior until upgraded.

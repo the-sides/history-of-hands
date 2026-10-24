@@ -25,20 +25,27 @@ public final class RoundStore extends SQLiteOpenHelper {
   }
 
   private RoundStore(Context context) {
-    super(context, "hands.db", null, 2);
+    super(context, "hands.db", null, 3);
   }
 
   public void onCreate(SQLiteDatabase db) {
     db.execSQL(
         "CREATE TABLE rounds(id TEXT PRIMARY KEY, mine TEXT NOT NULL, hers TEXT NOT NULL, playedAt"
             + " TEXT NOT NULL, deleted INTEGER NOT NULL DEFAULT 0, revision INTEGER NOT NULL"
-            + " DEFAULT 0, dirty INTEGER NOT NULL DEFAULT 1)");
+            + " DEFAULT 0, dirty INTEGER NOT NULL DEFAULT 1, base_revision INTEGER NOT NULL DEFAULT"
+            + " -1)");
+    db.execSQL("CREATE TABLE conflicts(id TEXT PRIMARY KEY, remote TEXT NOT NULL)");
   }
 
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     if (oldVersion < 2) {
       db.execSQL("ALTER TABLE rounds ADD COLUMN revision INTEGER NOT NULL DEFAULT 0");
       db.execSQL("ALTER TABLE rounds ADD COLUMN dirty INTEGER NOT NULL DEFAULT 1");
+    }
+    if (oldVersion < 3) {
+      db.execSQL("ALTER TABLE rounds ADD COLUMN base_revision INTEGER NOT NULL DEFAULT -1");
+      db.execSQL("UPDATE rounds SET base_revision=revision WHERE dirty=0");
+      db.execSQL("CREATE TABLE conflicts(id TEXT PRIMARY KEY, remote TEXT NOT NULL)");
     }
   }
 
@@ -102,6 +109,34 @@ public final class RoundStore extends SQLiteOpenHelper {
         long revision = r.optLong("revision", 0);
         if (revision < 0 || revision > 9007199254740991L)
           throw new IllegalArgumentException("Invalid revision");
+        if (!local) {
+          try (Cursor existing =
+              db.rawQuery(
+                  "SELECT mine,hers,playedAt,deleted,revision,dirty,base_revision FROM rounds WHERE"
+                      + " id=?",
+                  new String[] {id})) {
+            if (existing.moveToFirst()) {
+              boolean same =
+                  mine.equals(existing.getString(0))
+                      && hers.equals(existing.getString(1))
+                      && Instant.parse(when).equals(Instant.parse(existing.getString(2)))
+                      && r.optBoolean("deleted", false) == (existing.getInt(3) != 0);
+              if (existing.getInt(5) != 0) {
+                if (same) {
+                  ContentValues ack = new ContentValues();
+                  ack.put("dirty", 0);
+                  ack.put("revision", revision);
+                  ack.put("base_revision", revision);
+                  db.update("rounds", ack, "id=?", new String[] {id});
+                  db.delete("conflicts", "id=?", new String[] {id});
+                } else if (revision != existing.getLong(6)) {
+                  rememberConflict(r);
+                }
+                continue;
+              }
+            }
+          }
+        }
         ContentValues values = new ContentValues();
         values.put("id", id);
         values.put("mine", mine);
@@ -110,6 +145,7 @@ public final class RoundStore extends SQLiteOpenHelper {
         values.put("deleted", r.optBoolean("deleted", false) ? 1 : 0);
         values.put("revision", revision);
         values.put("dirty", local ? 1 : 0);
+        if (!local) values.put("base_revision", revision);
         long existingRevision = -1;
         boolean existingDeleted = false;
         try (Cursor cursor =
@@ -141,6 +177,51 @@ public final class RoundStore extends SQLiteOpenHelper {
     }
   }
 
+  public synchronized void rememberConflict(JSONObject remote) {
+    ContentValues values = new ContentValues();
+    values.put("id", remote.optString("id"));
+    values.put("remote", remote.toString());
+    getWritableDatabase()
+        .insertWithOnConflict("conflicts", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+  }
+
+  public synchronized JSONArray conflicts() {
+    JSONArray result = new JSONArray();
+    try (Cursor c =
+        getReadableDatabase().rawQuery("SELECT remote FROM conflicts ORDER BY id", null)) {
+      while (c.moveToNext()) result.put(new JSONObject(c.getString(0)));
+    } catch (org.json.JSONException e) {
+      throw new IllegalStateException(e);
+    }
+    return result;
+  }
+
+  public synchronized void resolve(JSONObject remote, boolean keepLocal) {
+    var db = getWritableDatabase();
+    db.beginTransaction();
+    try {
+      String id = remote.optString("id");
+      ContentValues v = new ContentValues();
+      v.put("base_revision", remote.optLong("revision"));
+      if (keepLocal) {
+        v.put("revision", Math.max(nextRevision(), remote.optLong("revision") + 1));
+        v.put("dirty", 1);
+      } else {
+        v.put("mine", remote.optString("mine"));
+        v.put("hers", remote.optString("hers"));
+        v.put("playedAt", remote.optString("playedAt"));
+        v.put("deleted", remote.optBoolean("deleted") ? 1 : 0);
+        v.put("revision", remote.optLong("revision"));
+        v.put("dirty", 0);
+      }
+      db.update("rounds", v, "id=?", new String[] {id});
+      db.delete("conflicts", "id=?", new String[] {id});
+      db.setTransactionSuccessful();
+    } finally {
+      db.endTransaction();
+    }
+  }
+
   private synchronized long nextRevision() {
     try (Cursor c =
         getReadableDatabase().rawQuery("SELECT COALESCE(MAX(revision),0) FROM rounds", null)) {
@@ -150,7 +231,7 @@ public final class RoundStore extends SQLiteOpenHelper {
   }
 
   public synchronized JSONArray pending() {
-    return query("dirty=1");
+    return query("dirty=1 AND id NOT IN (SELECT id FROM conflicts)");
   }
 
   public synchronized void acknowledge(JSONArray sent) {
@@ -161,6 +242,10 @@ public final class RoundStore extends SQLiteOpenHelper {
         JSONObject r = sent.optJSONObject(i);
         ContentValues v = new ContentValues();
         v.put("dirty", 0);
+        v.put("base_revision", r.optLong("revision", 0));
+        ContentValues base = new ContentValues();
+        base.put("base_revision", r.optLong("revision", 0));
+        db.update("rounds", base, "id=?", new String[] {r.optString("id")});
         db.update(
             "rounds",
             v,
@@ -182,7 +267,8 @@ public final class RoundStore extends SQLiteOpenHelper {
   }
 
   public synchronized void prepareForAccount() {
-    getWritableDatabase().execSQL("UPDATE rounds SET dirty=1");
+    getWritableDatabase().execSQL("UPDATE rounds SET dirty=1, base_revision=-1");
+    getWritableDatabase().delete("conflicts", null, null);
   }
 
   public synchronized void edit(String id, String mine, String hers, String playedAt) {
@@ -254,7 +340,8 @@ public final class RoundStore extends SQLiteOpenHelper {
                 .put("hers", c.getString(2))
                 .put("playedAt", c.getString(3))
                 .put("deleted", c.getInt(4) != 0)
-                .put("revision", c.getLong(5)));
+                .put("revision", c.getLong(5))
+                .put("baseRevision", c.getLong(7)));
     } catch (org.json.JSONException e) {
       throw new IllegalStateException(e);
     }
