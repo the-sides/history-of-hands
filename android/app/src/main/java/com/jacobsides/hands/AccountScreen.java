@@ -102,7 +102,7 @@ final class AccountScreen {
     data.addView(
         text(
             a,
-            "Exports include every game, original timestamps, corrections, and trash. Imports keep"
+            "Exports include all saved games, dates, corrections, and trash. Imports keep"
                 + " newer changes and never duplicate a game.",
             10,
             MUTED,
