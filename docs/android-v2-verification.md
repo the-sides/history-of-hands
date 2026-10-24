@@ -24,3 +24,9 @@ The website's home page, dashboard components, CSS, and existing Discord connect
 At verification time, `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` were absent from the production Vercel project. GitHub's real OAuth consent/return flow cannot be completed until the OAuth app is registered, those values are set, and the deployment is refreshed. The app's dedicated sign-in page reports setup pending rather than sending users into a broken provider flow. Existing authenticated device backup remains supported.
 
 OAuth homepage: `https://hoh.jacobsides.com`. Callback: `https://hoh.jacobsides.com/api/auth/callback/github`.
+
+## Production follow-through
+
+The initial cached Vercel build exposed a stale generated Prisma client. The build script now regenerates the client before every Next.js build; the corrected deployment completed successfully. The live APK matched the signed local artifact (`af45b4ef3cefa6d9208537cb694b6235240e4eb415b0cff1dcc6121fb9e28d0d`).
+
+Both old and v2 API integration suites passed against production. A signed-app account-connection fixture uploaded twelve local records, including corrections and trash. A newer server-side throw/date correction then downloaded automatically and appeared in dated native History. This verifies the app/server connection and data flow using an authenticated fixture; it does not substitute for the real GitHub OAuth consent flow, which still awaits the production OAuth credentials. All fixture users, sessions, linked credentials, and history rows were deleted afterward.
