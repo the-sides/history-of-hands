@@ -42,3 +42,9 @@ Release build, lint error checks, and all nine JVM tests passed, including all n
 The app has no manual sync button. Added network-constrained periodic background refresh, in addition to automatic save/resume/foreground syncing. SQLite v3 tracks each game's base server revision and keeps conflicting account snapshots separately. The review card compares both throws, timestamps, and trash status and offers Keep phone, Keep account, or Decide later. Nonconflicting games continue to upload. Account switches reset baseline metadata.
 
 API integration checks cover competing updates, higher-clock stale edits, delete/edit collisions, explicit resolution, retry idempotence, concurrent compare-and-swap, and unrelated uploads in a conflicting batch. Executable debug-only emulator storage checks cover base retention, local preservation, blocked conflict upload, unrelated changes, both resolutions, and edits made while an earlier upload is acknowledged. UI checks cover comparison, deferral, and account resolution. Release build, nine JVM tests, Android lint error checks, and web lint/typechecking passed. Older APKs must be upgraded to get conflict review.
+
+## Android 2.2.1 swipe-to-trash
+
+History game cards support left/right swipe-to-trash with directional feedback and a persistent Undo bar naming the action. The gesture uses a 30% card-width threshold, excludes vertical/short/cancelled/multi-touch input, and is disabled in bulk selection and Trash. The initial emulator run identified a vertical drag opening the editor on a short non-scrolling list; moved gestures now cancel click handling.
+
+The corrected emulator acceptance passed left/right deletion, immediate visible Undo and restored counts, short/vertical non-deletion, and disabled swipe deletion in bulk selection. Signed release build, lint error checks, and all nine JVM tests passed.

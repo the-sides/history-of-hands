@@ -51,3 +51,9 @@ History has visible selection checkboxes and a Bulk edit toggle. Select matching
 There is no Sync now control. Saves upload automatically, foreground refreshes run every 20 seconds, and Android schedules network-constrained periodic background refreshes (15-minute minimum; the OS may defer them). Offline saves retry automatically.
 
 Each upload carries the server revision it was based on. Competing edits, including trash-versus-edit changes, preserve the phone copy and account copy and stop that game's upload. A persistent review card asks which version to keep; Decide later keeps both safe while unrelated games continue syncing. Server compare-and-swap checks catch races between downloading and uploading. Older installed APKs retain their previous revision behavior until upgraded.
+
+### Android 2.2.1 History gestures
+
+Swipe a game left or right past 30% of its card to move it to trash. A persistent bottom bar offers Undo, and History → Trash can restore it later. Short or vertical drags do not delete. Swipe deletion is disabled during bulk selection and in Trash.
+
+Emulator acceptance: `python3 tests/android-swipe-history.py` on a debug emulator with local fixture games and no connected account.

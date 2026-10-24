@@ -24,7 +24,7 @@ final class HistoryScreen {
     root.addView(
         text(
             a,
-            "Tap a game to edit its throws or date. Nothing accidental has to stay.",
+            "Tap to edit. Swipe left or right to trash a game; Undo brings it back.",
             12,
             MUTED,
             false));
@@ -226,7 +226,16 @@ final class HistoryScreen {
         gap(list, 12);
       }
       String outcome = RoundStore.outcome(r.optString("mine"), r.optString("hers"));
-      LinearLayout card = card(a);
+      LinearLayout card =
+          new SwipeGameCard(
+              a,
+              a.historyFilter != 4 && !a.selecting,
+              () -> {
+                String id = r.optString("id");
+                RoundStore.get(a).setDeleted(id, true);
+                a.selected.remove(id);
+                a.changed("Game moved to trash", () -> RoundStore.get(a).setDeleted(id, false));
+              });
       card.setPadding(dp(a, 16), dp(a, 16), dp(a, 16), dp(a, 16));
       LinearLayout row = row(a);
       if (a.historyFilter != 4) {

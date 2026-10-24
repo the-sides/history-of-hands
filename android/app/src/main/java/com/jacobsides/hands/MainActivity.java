@@ -37,6 +37,7 @@ public final class MainActivity extends Activity {
   private LinearLayout shell, content, undoBar;
   private TextView cloudLabel;
   private Runnable undoAction;
+  private String undoMessage = "Change saved";
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final Runnable periodic =
       new Runnable() {
@@ -133,6 +134,7 @@ public final class MainActivity extends Activity {
 
   void changed(String message, Runnable undo) {
     undoAction = undo;
+    undoMessage = message;
     HandsWidget.status(this, message);
     HandsWidget.update(this);
     SyncJob.schedule(this);
@@ -235,7 +237,7 @@ public final class MainActivity extends Activity {
       undoBar = row(this);
       undoBar.setPadding(dp(this, 22), dp(this, 8), dp(this, 14), dp(this, 8));
       undoBar.setBackgroundColor(RAISED);
-      TextView message = text(this, "Change saved", 12, TEXT, false);
+      TextView message = text(this, undoMessage, 12, TEXT, false);
       undoBar.addView(message, new LinearLayout.LayoutParams(0, -2, 1));
       undoBar.addView(
           chip(
